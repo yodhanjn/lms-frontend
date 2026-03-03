@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import Navbar from '../components/layout/Navbar';
 import Logo from '../components/layout/Logo';
 
@@ -13,6 +14,10 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/courses';
+
+  useEffect(() => {
+    api.get('/health').catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

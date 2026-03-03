@@ -13,14 +13,45 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Retry once on 502/503/504 or network error (e.g. Render free tier waking up)
+const RETRY_STATUSES = [502, 503, 504];
+const RETRY_DELAY_MS = 20000;
+
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
+  async (err) => {
+    const config = err.config;
+    const serverUnavailable =
+      !err.response || RETRY_STATUSES.includes(err.response?.status);
+    const isRetryable =
+      serverUnavailable &&
+      config &&
+      !config.__retried &&
+      !config.url?.includes('/health');
+
+    if (isRetryable) {
+      config.__retried = true;
+      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      return api.request(config);
+    }
+
     if (err.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.dispatchEvent(new Event('auth-logout'));
     }
+
+    const isServerWakeup =
+      ((err.response && RETRY_STATUSES.includes(err.response.status)) ||
+        !err.response) &&
+      !config?.url?.includes('/health');
+    if (isServerWakeup) {
+      if (!err.response) err.response = { data: {} };
+      err.response.data = err.response.data || {};
+      err.response.data.message =
+        'Backend is starting up. Please try again in a moment.';
+    }
+
     return Promise.reject(err);
   }
 );
