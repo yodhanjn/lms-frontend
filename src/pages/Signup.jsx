@@ -1,0 +1,124 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/layout/Navbar';
+import Logo from '../components/layout/Logo';
+
+const ROLES = [
+  { value: 'student', label: 'Student' },
+  { value: 'instructor', label: 'Instructor' },
+  { value: 'admin', label: 'Admin' },
+];
+
+export default function Signup() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [role, setRole] = useState('student');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signup } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await signup(email, password, name, role);
+      navigate('/courses', { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Signup failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-[80vh] bg-gradient-to-b from-slate-50 to-white flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg border border-slate-200 p-8">
+          <div className="flex items-center justify-center gap-2.5 mb-2">
+            <Logo className="w-10 h-10 shrink-0" iconClassName="text-brand-accent" />
+            <span className="font-brand text-xl font-bold tracking-tight text-slate-900">Learn Master</span>
+          </div>
+          <h1 className="text-2xl font-bold text-center text-slate-900 mt-4">Sign up</h1>
+          <p className="text-center text-slate-600 text-sm mt-1 mb-6">Create an account to start learning.</p>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>
+            )}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-accent focus:border-brand-accent"
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-accent focus:border-brand-accent"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-accent focus:border-brand-accent"
+              />
+            </div>
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-slate-700 mb-1">
+                Role
+              </label>
+              <select
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-brand-accent focus:border-brand-accent"
+              >
+                {ROLES.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 px-4 bg-brand-accent hover:bg-brand-accentHover text-slate-900 rounded-md disabled:opacity-50 font-medium transition-colors"
+            >
+              {loading ? 'Creating account...' : 'Sign up'}
+            </button>
+          </form>
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Already have an account? <Link to="/login" className="text-brand-accent hover:underline font-medium">Log in</Link>
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
