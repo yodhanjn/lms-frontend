@@ -42,14 +42,21 @@ api.interceptors.response.use(
     }
 
     const isServerWakeup =
-      ((err.response && RETRY_STATUSES.includes(err.response.status)) ||
-        !err.response) &&
+      err.response &&
+      RETRY_STATUSES.includes(err.response.status) &&
       !config?.url?.includes('/health');
     if (isServerWakeup) {
       if (!err.response) err.response = { data: {} };
       err.response.data = err.response.data || {};
       err.response.data.message =
         'Backend is starting up. Please try again in a moment.';
+    }
+
+    const isNetworkError = !err.response && !config?.url?.includes('/health');
+    if (isNetworkError) {
+      err.response = { data: {} };
+      err.response.data.message =
+        'Cannot reach backend API. Check backend status and VITE_API_URL.';
     }
 
     return Promise.reject(err);
