@@ -96,3 +96,7 @@ export const progress = {
   updateLastWatched: (courseId, lessonId) =>
     api.patch('/progress/last-watched', { courseId, lessonId }),
 };
+
+export const ai = {
+  chat: (message, history = []) => api.post('/ai/chat', { message, history }),
+};
