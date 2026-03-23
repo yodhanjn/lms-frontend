@@ -94,6 +94,8 @@ export const enrollments = {
   getMyEnrollments: () => api.get('/enrollments/my-enrollments'),
   getMyLearning: () => api.get('/enrollments/my-learning'),
   enroll: (courseId) => api.post(`/courses/${courseId}/enroll`),
+  createOrder: (courseId) => api.post(`/courses/${courseId}/payment/order`),
+  verifyPayment: (courseId, payload) => api.post(`/courses/${courseId}/payment/verify`, payload),
   getEnrollment: (courseId) => api.get(`/courses/${courseId}/enrollment`),
 };
 
