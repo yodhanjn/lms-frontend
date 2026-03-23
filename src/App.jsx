@@ -11,7 +11,7 @@ import MyLearning from './pages/MyLearning';
 import InstructorDashboard from './pages/InstructorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AIChat from './pages/AIChat';
-import { ai } from './services/api';
+import api, { ai } from './services/api';
 
 function ApiConfigBanner() {
   const [show, setShow] = useState(false);
@@ -55,6 +55,12 @@ function FloatingChatWidget() {
     if (!open) return;
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, loading, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    // Wake backend early so first chat message does not fail on cold start.
+    api.get('/health').catch(() => {});
+  }, [open]);
 
   const sendMessage = async () => {
     const text = input.trim();
